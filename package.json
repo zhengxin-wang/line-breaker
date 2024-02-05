@@ -1,0 +1,35 @@
+{
+  "name": "line-breaker",
+  "displayName": "Line Breaker",
+  "description": "Switch between single and multi line format for texts with brackets",
+  "version": "0.0.1",
+  "publisher": "Jackson9527",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.32.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.lineBreaker",
+        "category": "Customised Editing",
+        "title": "Switch between single and multi line format for texts with brackets"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.lineBreaker",
+        "key": "ctrl+alt+l"
+      }
+    ]
+  },
+  "scripts": {},
+  "devDependencies": {
+    "@types/vscode": "^1.32.0"
+  }
+}
