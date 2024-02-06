@@ -1,5 +1,7 @@
 # Line breaker
 
+![Logo](/images/line-breaker.png)
+
 - This line-breaker is a VS code extension that would switch between single and multi line format for texts with brackets.
 - User can switch format by 
   - hot key: Ctrl + Alt + L 
