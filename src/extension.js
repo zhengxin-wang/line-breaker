@@ -1,8 +1,8 @@
 const vscode = require("vscode");
 
 module.exports = {
-    activate
-	};
+  activate
+};
 
 function activate(context) {
   const commandID = "extension.lineBreaker";
@@ -15,8 +15,19 @@ function activate(context) {
   context.subscriptions.push(disposable);
 }
 
+function processRange(editor, document, range) {
+  if (document.getText(range)) {
+    const text = document.getText(range);
+    const isSingleLine = range.start.line === range.end.line;
+    editor.edit((editBuilder) => {
+      editBuilder.replace(range, formatText(text, isSingleLine));
+      vscode.window.showInformationMessage('Switched to ' + (isSingleLine ? 'multi line' : 'single line'));
+    });
+  }
+}
+
+
 function switchLine() {
-  // function switchLine (editor, edit) {
   const editor = vscode.window.activeTextEditor;
 
   if (editor) {
@@ -24,38 +35,13 @@ function switchLine() {
     const selection = editor.selection;
 
     if (document.getText(selection)) {
-      const text = document.getText(selection);
-      editor.edit((editBuilder) => {
-        editBuilder.replace(selection, formatText(text, false));
-      });
-    }
-
-    const cursorPosition = editor.selection.active;
-    const lineNum = cursorPosition.line;
-    const lineRange = document.lineAt(lineNum).range;
-    const lineText = document.getText(lineRange)
-    // const canProcess = (lineText.match(/[{}()]/g) || [])?.length > 0;
-    const canProcess = (lineText.match(/[{}]/g) || [])?.length > 0;
-    if (!canProcess) {
+      processRange(editor, document, selection);
       return
     }
 
-    const {
-      startLine,
-      endLine
-    } = getBlockRange(document, cursorPosition);
-    const isSingleLine = startLine === endLine;
-    // Return the range from the start of the opening brace to the end of the closing brace
-    const start = new vscode.Position(startLine, 0);
-    const end = new vscode.Position(endLine, document.lineAt(endLine).range.end.character);
-    const blockRange = new vscode.Range(start, end);
-    if (document.getText(blockRange)) {
-      const text = document.getText(blockRange);
-      vscode.window.showInformationMessage(text);
-      console.log(text)
-      editor.edit((editBuilder) => {
-        editBuilder.replace(blockRange, formatText(text, isSingleLine));
-      });
+    const blockRange = calcBlockRange(editor, document);
+    if (blockRange) {
+      processRange(editor, document, blockRange);
     }
   }
 }
@@ -130,6 +116,28 @@ function getBlockRange(document, cursorPosition) {
     startLine,
     endLine
   };
+}
+
+function calcBlockRange(editor, document) {
+  const cursorPosition = editor.selection.active;
+  const lineNum = cursorPosition.line;
+  const lineRange = document.lineAt(lineNum).range;
+  const lineText = document.getText(lineRange)
+  const canProcess = (lineText.match(/[{}]/g) || [])?.length > 0;
+  if (!canProcess) {
+    vscode.window.showErrorMessage('No opening or closing bracket in this line');
+    return
+  }
+
+  const {
+    startLine,
+    endLine
+  } = getBlockRange(document, cursorPosition);
+  // Return the range from the start of the opening brace to the end of the closing brace
+  const start = new vscode.Position(startLine, 0);
+  const end = new vscode.Position(endLine, document.lineAt(endLine).range.end.character);
+  const blockRange = new vscode.Range(start, end);
+  return blockRange;
 }
 
 function getCharCount(lineText, char) {
