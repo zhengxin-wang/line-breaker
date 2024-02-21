@@ -38,11 +38,14 @@ function getBlockRange(document, cursorPosition) {
     }
   } else if (currentLineText.includes('}')) {
     // Search upwards for the opening brace '{'
+    let openBrackets = 1;
     for (let i = currentLineNumber - 1; i >= 0; i--) {
       if (i === -1) break;
 
       const lineText = document.lineAt(i).text;
-      if (lineText.includes('{') && !lineText.includes('}')) {
+      openBrackets += getCharCount(lineText, '}');
+      openBrackets -= getCharCount(lineText, '{');
+      if (openBrackets === 0) {
         startLine = i;
         break;
       }
