@@ -42,8 +42,6 @@ suite('Extension Test Suite', () => {
     const range = calcBlockRange(editor, editor.document);
     const result = formatText(editor.document, range);
     const expected = editor.document.lineAt(7).text;
-    this.timeout(20000); 
-    await delay(10000);
     assert.strictEqual(result, expected, 'File content does not match expected content');
   });
 });
