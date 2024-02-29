@@ -22,8 +22,7 @@ function processRange(editor, document, range) {
     editor.edit((editBuilder) => {
       editBuilder.replace(range, formatText(document, range));
     });
-    const isSingleLine = range.start.line === range.end.line;
-    vscode.window.showInformationMessage('Switched to ' + (isSingleLine ? 'multi line' : 'single line'));
+    vscode.window.showInformationMessage('Switched to ' + (range.isSingleLine ? 'multi line' : 'single line'));
   }
 }
 

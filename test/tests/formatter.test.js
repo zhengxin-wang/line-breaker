@@ -15,11 +15,35 @@ const mockContext = {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const getTargetRangeFromFile = async (filepath, currentLineNumber = 0) => {
+  const { editor } = await openFile(filepath);
+  // Now the document is shown in the editor, you can add more assertions to test the extension's behavior
+  const text = editor.document.getText();
+  assert.strictEqual(text.includes('object'), true, 'File content does not match expected content');
+
+  const position = new vscode.Position(currentLineNumber, 0);
+  editor.selection = new vscode.Selection(position, position);
+  editor.revealRange(new vscode.Range(position, position));
+
+  const range = calcBlockRange(editor, editor.document);
+  return {
+    editor, 
+    range
+  }
+}
+
+const getTextFromLines = (document, startLine, endLine) => {
+  const start = new vscode.Position(startLine, 0);
+  const end = new vscode.Position(endLine, document.lineAt(endLine).range.end.character);
+  const expectedRange = new vscode.Range(start, end);
+  return document.getText(expectedRange);
+}
+
 suite('Extension Test Suite', () => {
   suiteSetup(() => {
     myExtension.activate(mockContext);
   });
-  
+
   suiteTeardown(() => {
     vscode.window.showInformationMessage('All tests done!');
   });
@@ -29,19 +53,39 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(-1, [1, 2, 3].indexOf(0));
   });
 
-  test('Process multi line object', async function() {
-    const { editor } = await openFile('multi-line-object.js');
-    // Now the document is shown in the editor, you can add more assertions to test the extension's behavior
-    const text = editor.document.getText();
-    assert.strictEqual(text.includes('object'), true, 'File content does not match expected content');
-
-    const position = new vscode.Position(0, 0);
-    editor.selection = new vscode.Selection(position, position);
-    editor.revealRange(new vscode.Range(position, position));
-
-    const range = calcBlockRange(editor, editor.document);
+  test('Process multi line object', async function () {
+    const { editor, range } = await getTargetRangeFromFile('multi-line-object.js');
     const result = formatText(editor.document, range);
-    const expected = editor.document.lineAt(7).text;
+    const expectedLine = 7;
+    const expected = editor.document.lineAt(expectedLine).text;
+    assert.strictEqual(result, expected, 'File content does not match expected content');
+  });
+
+  test('Process multi line function params', async function () {
+    const cursorLine = 14;
+    const { editor, range } = await getTargetRangeFromFile('multi-line-object.js', cursorLine);
+    const result = formatText(editor.document, range);
+    const expectedLine = 19;
+    const expected = editor.document.lineAt(expectedLine).text;
+    assert.strictEqual(result, expected, 'File content does not match expected content');
+  });
+
+  test('Process single line object', async function () {
+    const { editor, range } = await getTargetRangeFromFile('single-line-object.js');
+    const result = formatText(editor.document, range);
+    const startLine = 3;
+    const endLine = 7;
+    const expected = getTextFromLines(editor.document, startLine, endLine);
+    assert.strictEqual(result, expected, 'File content does not match expected content');
+  });
+
+  test('Process single line function params', async function () {
+    const cursorLine = 10;
+    const { editor, range } = await getTargetRangeFromFile('single-line-object.js', cursorLine);
+    const result = formatText(editor.document, range);
+    const startLine = 15;
+    const endLine = 19;
+    const expected = getTextFromLines(editor.document, startLine, endLine);
     assert.strictEqual(result, expected, 'File content does not match expected content');
   });
 });
