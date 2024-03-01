@@ -53,6 +53,14 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(-1, [1, 2, 3].indexOf(0));
   });
 
+  test('Process nested', async function () {
+    const { editor, range } = await getTargetRangeFromFile('nested.js');
+    const result = formatText(editor.document, range);
+    const expectedLine = 12;
+    const expected = editor.document.lineAt(expectedLine).text;
+    assert.strictEqual(result, expected, 'File content does not match expected content');
+  });
+
   test('Process multi line object', async function () {
     const { editor, range } = await getTargetRangeFromFile('multi-line-object.js');
     const result = formatText(editor.document, range);
