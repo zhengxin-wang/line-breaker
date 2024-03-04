@@ -3,7 +3,7 @@
   "displayName": "Line Breaker",
   "description": "Switch between single and multi line format for texts with brackets",
   "icon": "images/line-breaker.png",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "publisher": "Jackson9527",
   "license": "MIT",
   "engines": {
