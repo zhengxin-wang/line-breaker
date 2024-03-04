@@ -1,6 +1,9 @@
 
 const vscode = require("vscode");
-const { getCharCount } = require('./utils');
+const {
+  INVALID_LINE_ERROR,
+  NOT_PAIRED_ERROR
+} = require('./consts');
 
 module.exports = {
   calcBlockRange
@@ -9,48 +12,12 @@ module.exports = {
 const openChar = '{';
 const closeChar = '}';
 
-function nthIndexOfChar(str, char, n) {
-  if (n <= 0) {
-    return -1
-  }
-
-  let count = 0;
-
-  for (let i = 0; i < str.length; i++) {
-    if (str[i] === char) {
-      count++;
-      if (count === n) {
-        return i;
-      }
-    }
-  }
-
-  return -1; // Return -1 if the n-th closing brace was not found
-}
-
-function lastNthIndexOfChar(str, char, n) {
-  if (n <= 0) {
-    return -1
-  }
-
-  let count = 0;
-
-  for (let i = str.length - 1; i >= 0; i--) {
-    if (str[i] === char) {
-      count++;
-      if (count === n) {
-        return i;
-      }
-    }
-  }
-
-  return -1; // Return -1 if the n-th closing brace was not found
-}
-
 function findTargetIndex(str, char, counterChar, openBrackets) {
   let count = openBrackets;
   for (let i = 0; i < str.length; i++) {
-    if (str[i] === counterChar) {
+    if (str[i] === char) {
+      count++;
+    } else if (str[i] === counterChar) {
       count--;
       if (count === 0) {
         return {
@@ -58,8 +25,29 @@ function findTargetIndex(str, char, counterChar, openBrackets) {
           openBrackets: 0
         };
       }
-    } else if (str[i] === char) {
+    }
+  }
+
+  // If the closing brace was not found, return -1
+  return {
+    targetIndex: -1,
+    openBrackets: count
+  }
+}
+
+function findLastTargetIndex(str, char, counterChar, openBrackets) {
+  let count = openBrackets;
+  for (let i = str.length - 1; i >= 0 ; i--) {
+    if (str[i] === char) {
       count++;
+    } else if (str[i] === counterChar) {
+      count--;
+      if (count === 0) {
+        return {
+          targetIndex: i,
+          openBrackets: 0
+        };
+      }
     }
   }
 
@@ -98,20 +86,27 @@ function getBlockRange(document, cursorPosition) {
     }
   } else {
     // search upwards
+    // Take the first close char in the current line as the end of the range.
     let openBrackets = 1;
     for (let i = currentLineNumber - 1; i >= 0; i--) {
       if (i === -1) break;
-
-      let lineText = document.lineAt(i).text;
-
-      openBrackets -= getCharCount(lineText, openChar);
-      if (openBrackets <= 0) {
+      const lineText = document.lineAt(i).text;
+      const {
+        targetIndex,
+        openBrackets: newOpenBrackets
+      } = findLastTargetIndex(lineText, closeChar, openChar, openBrackets);
+      if (targetIndex >= 0) {
         startLine = i;
-        openIndex = nthIndexOfChar(lineText, openChar, 1 - openBrackets);
+        openIndex = targetIndex;
         break;
+      } else {
+        openBrackets = newOpenBrackets;
       }
-      openBrackets += getCharCount(lineText, closeChar);
     }
+  }
+
+  if (openIndex < 0 || closeIndex < 0) {
+    throw new Error(NOT_PAIRED_ERROR);
   }
 
   // Return the range from the start of the opening brace to the end of the closing brace
@@ -126,8 +121,7 @@ function calcBlockRange(editor, document) {
   const lineText = document.lineAt(cursorPosition.line).text;
   const canProcess = (lineText.match(/[{}]/g) || [])?.length > 0;
   if (!canProcess) {
-    vscode.window.showErrorMessage('No opening or closing bracket in this line');
-    return
+    throw new Error(INVALID_LINE_ERROR);
   }
 
   return getBlockRange(document, cursorPosition);

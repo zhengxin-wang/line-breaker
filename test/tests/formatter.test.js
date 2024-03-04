@@ -4,6 +4,7 @@ const myExtension = require('../../src/extension');
 const { openFile } = require('../utils');
 const { formatText } = require('../../src/lib/formatter');
 const { calcBlockRange } = require('../../src/lib/range');
+const { NOT_PAIRED_ERROR, INVALID_LINE_ERROR } = require('../../src/lib/consts');
 
 const mockContext = {
   subscriptions: [],
@@ -19,7 +20,7 @@ const getTargetRangeFromFile = async (filepath, currentLineNumber = 0) => {
   const { editor } = await openFile(filepath);
   // Now the document is shown in the editor, you can add more assertions to test the extension's behavior
   const text = editor.document.getText();
-  assert.strictEqual(text.includes('object'), true, 'File content does not match expected content');
+  assert.strictEqual(text.length > 0, true, 'File is not correctly opened or is empty.');
 
   const position = new vscode.Position(currentLineNumber, 0);
   editor.selection = new vscode.Selection(position, position);
@@ -48,9 +49,24 @@ suite('Extension Test Suite', () => {
     vscode.window.showInformationMessage('All tests done!');
   });
 
-  test('Sample test', () => {
-    assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-    assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+  test('Not paired object should throw error', async function () {
+    const cursorLine = 7;
+
+    try {
+      await getTargetRangeFromFile('error-case.js', cursorLine);
+    } catch (err) {
+      assert.strictEqual(err.message, NOT_PAIRED_ERROR);
+    }
+  });
+
+  test('Cursor line doesn\'t contain brackets should throw error', async function () {
+    const cursorLine = 14;
+
+    try {
+       await getTargetRangeFromFile('error-case.js', cursorLine);
+    } catch (err) {
+      assert.strictEqual(err.message, INVALID_LINE_ERROR);
+    }
   });
 
   test('Process multi line object', async function () {

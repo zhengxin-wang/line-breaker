@@ -9,8 +9,13 @@ function formatText(document, range) {
   if (range.isSingleLine) {
     const text = document.getText(range);
     const startLineText = document.lineAt(range.start.line).text;
+    
+    // get the base indent from the start line
     const leadingWhitespace = startLineText.match(/^\s*/)[0];
+
+    // get the indent count of the current editor
     const indent = getCurrentIndentation();
+    
     let indentCount = 0
     return text.replace(/({|\s*}|,\s*}|,)\s*/g, (match, part1) => {
      if (part1 === '{') {

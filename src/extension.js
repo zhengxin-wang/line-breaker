@@ -39,9 +39,13 @@ function switchLine() {
       return
     }
 
-    const blockRange = calcBlockRange(editor, document);
-    if (blockRange) {
-      processRange(editor, document, blockRange);
+    try {
+      const blockRange = calcBlockRange(editor, document);
+      if (blockRange) {
+        processRange(editor, document, blockRange);
+      }
+    } catch (err) {
+      vscode.window.showErrorMessage(err.message);
     }
   }
 }
