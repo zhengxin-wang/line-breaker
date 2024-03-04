@@ -19,3 +19,18 @@ const functionA = ({
 /* Expected output:
 { param1, param2, param3, }
 */
+
+export const nestedObject = {
+  moderation: {
+    approve: 'models.approve.post',
+    reject: 'models.reject.post',
+    moderation: {
+      approve: 'models.approve.post',
+      reject: 'models.reject.post'
+    }
+  }
+}
+
+/* Expected output:
+{ moderation: { approve: 'models.approve.post', reject: 'models.reject.post', moderation: { approve: 'models.approve.post', reject: 'models.reject.post' } } }
+*/

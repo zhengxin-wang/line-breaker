@@ -53,14 +53,6 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(-1, [1, 2, 3].indexOf(0));
   });
 
-  test('Process nested', async function () {
-    const { editor, range } = await getTargetRangeFromFile('nested.js');
-    const result = formatText(editor.document, range);
-    const expectedLine = 12;
-    const expected = editor.document.lineAt(expectedLine).text;
-    assert.strictEqual(result, expected, 'File content does not match expected content');
-  });
-
   test('Process multi line object', async function () {
     const { editor, range } = await getTargetRangeFromFile('multi-line-object.js');
     const result = formatText(editor.document, range);
@@ -74,6 +66,15 @@ suite('Extension Test Suite', () => {
     const { editor, range } = await getTargetRangeFromFile('multi-line-object.js', cursorLine);
     const result = formatText(editor.document, range);
     const expectedLine = 19;
+    const expected = editor.document.lineAt(expectedLine).text;
+    assert.strictEqual(result, expected, 'File content does not match expected content');
+  });
+
+  test('Process nested multi line object', async function () {
+    const cursorLine = 22;
+    const { editor, range } = await getTargetRangeFromFile('multi-line-object.js', cursorLine);
+    const result = formatText(editor.document, range);
+    const expectedLine = 34;
     const expected = editor.document.lineAt(expectedLine).text;
     assert.strictEqual(result, expected, 'File content does not match expected content');
   });
@@ -93,6 +94,16 @@ suite('Extension Test Suite', () => {
     const result = formatText(editor.document, range);
     const startLine = 15;
     const endLine = 19;
+    const expected = getTextFromLines(editor.document, startLine, endLine);
+    assert.strictEqual(result, expected, 'File content does not match expected content');
+  });
+
+  test('Process nested single line object', async function () {
+    const cursorLine = 22;
+    const { editor, range } = await getTargetRangeFromFile('single-line-object.js', cursorLine);
+    const result = formatText(editor.document, range);
+    const startLine = 25;
+    const endLine = 34;
     const expected = getTextFromLines(editor.document, startLine, endLine);
     assert.strictEqual(result, expected, 'File content does not match expected content');
   });

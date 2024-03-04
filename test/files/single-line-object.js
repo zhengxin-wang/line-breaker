@@ -19,3 +19,18 @@ const functionA = ({ param1, param2, param3, }) => {
   param3,
 }
 */
+
+export const nestedObject = { moderation: { approve: 'models.prompt_lib.approve.post', reject: 'models.prompt_lib.reject.post', moderation: { approve: 'models.prompt_lib.approve.post', reject: 'models.prompt_lib.reject.post' } } }
+
+/* Expected output:
+{
+  moderation: {
+    approve: 'models.prompt_lib.approve.post',
+    reject: 'models.prompt_lib.reject.post',
+    moderation: {
+      approve: 'models.prompt_lib.approve.post',
+      reject: 'models.prompt_lib.reject.post'
+    }
+  }
+}
+*/
